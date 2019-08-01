@@ -1,0 +1,9 @@
+{
+	"name": "@types/deck.gl",
+	"version": "6.4.0",
+	"description": "deck.gl typedefs",
+	"main": "index.js",
+	"types": "deck.gl/index.d.ts",
+	"author": "",
+	"license": "ISC"
+}
