@@ -47,7 +47,7 @@ declare module 'deck.gl' {
 		opacity?: number;
 	};
 
-	type LayerInteractionProps<T> = {
+	type LayerInteractionProps<T = any> = {
 		pickable?: boolean;
 		onHover?: EventCallback<T>;
 		onClick?: EventCallback<T>;
