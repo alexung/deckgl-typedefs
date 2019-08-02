@@ -24,19 +24,16 @@ declare module 'deck.gl' {
 		| [number, number, number, number];
 	type Item = any;
 	type Event = any;
-	export type PickingInfo<T = any> = {
+	export type PickingInfo = {
 		layer: Layer;
 		index: number;
-		object: T;
+		object: any;
 		x: number;
 		y: number;
 		lngLat: [number, number];
 		[key: string]: any;
 	};
-	type EventCallback<T> = (
-		info: PickingInfo<T>,
-		event: Event
-	) => void | boolean;
+	type EventCallback<T> = (info: PickingInfo, event: Event) => void | boolean;
 
 	type CommonLayerProps<T> = {
 		id?: string;
