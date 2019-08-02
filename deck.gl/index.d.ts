@@ -1,154 +1,87 @@
-// These are not final typings but some are better than none.
-// If you ever run into TS errors when you _think_ you're using Deck.gl correctly,
-// feel free to change this typedef!
+/**
+ * This file only exists because deck.gl does not provide typings files and the ones that exist on
+ * the internet are pretty busted. This is a very small subset of things exposed in deck.gl and
+ * is only here to allow us to use deck.gl with a baseline of typing support.
+ */
 declare module 'deck.gl' {
-    import React from 'react';
+	import React from 'react';
 
-    export type DeckGLProps = DeckProperties & {
-        controller: null | false | any;
-        children: any;
-        [key: string]: any;
-    };
+	export interface DeckGLProps {
+		[key: string]: any;
+	}
 
-    export class DeckGL extends React.Component<DeckGLProps> { }
-    export default DeckGL;
+	export default class DeckGL extends React.Component<DeckGLProps> {}
 
-    type DeckProperties = any;
-    export class Deck {
-        public constructor(props: DeckProperties);
-    }
+	/**
+	 * @see https://github.com/uber/deck.gl/blob/master/docs/developer-guide/interactivity.md#the-picking-info-object
+	 */
+	export interface PickingInfo<T = any> {
+		layer: Layer<T>;
+		index: number;
+		object?: T;
+		x: number;
+		y: number;
+		coordinate: any;
+	}
 
-    type Color = number[] | [number, number, number] | [number, number, number, number];
-    type Item = any;
-    type Event = any;
-    export type PickingInfo<ObjectType> = {
-        layer: Layer;
-        index: number;
-        object: ObjectType;
-        x: number;
-        y: number;
-        lngLat: [number, number];
-        [key: string]: any;
-    };
-    type EventCallback<T> = (info: PickingInfo<T>, event: Event) => void | boolean;
+	/**
+	 * @see https://github.com/uber/deck.gl/blob/master/docs/api-reference/layer.md
+	 */
+	export interface LayerProps<T = any> {
+		[key: string]: any;
+		id?: string;
+		visible?: boolean;
+		opacity?: number;
+		pickable?: boolean;
+		onHover?: (info: PickingInfo<T>, event: Event) => boolean | void;
+		onClick?: (info: PickingInfo<T>, event: Event) => boolean | void;
+		onDragStart?: (info: PickingInfo<T>, event: Event) => boolean | void;
+		onDrag?: (info: PickingInfo<T>, event: Event) => boolean | void;
+		onDragEnd?: (info: PickingInfo<T>, event: Event) => boolean | void;
+		highlightColor?: number[];
+		highlightedObjectIndex?: number;
+		autoHighlight?: boolean;
+		getPolygonOffset?: ({
+			layerIndex
+		}: {
+			layerIndex: number;
+		}) => [number, number];
+	}
 
-    type CommonLayerProps<T> = {
-        id?: string;
-        // leaving `any` in data for now since some layers don't in fact accept arrays (geojson)
-        // let's fix that when we get to write per-layer prop types
-        data?: Array<T> | Promise<Array<T>> | any;
-        visible?: boolean;
-        opacity?: number;
-    };
+	/**
+	 * @see https://github.com/uber/deck.gl/blob/master/docs/api-reference/layer.md
+	 */
+	export class Layer<T> {
+		public constructor(props: LayerProps<T>);
+		public props: T;
+	}
 
-    type LayerInteractionProps<T> = {
-        pickable?: boolean;
-        onHover?: EventCallback<T>;
-        onClick?: EventCallback<T>;
-        onDragStart?: EventCallback<T>;
-        onDrag?: EventCallback<T>;
-        onDragEnd?: EventCallback<T>;
-        highlightColor?: Color;
-        highlightedObjectIndex?: number;
-        autoHighlight?: boolean;
-    };
+	export class CompositeLayer<T> extends Layer<T> {
+		public getSubLayerProps: (props: object) => object;
+		public static defaultProps: object;
+	}
 
-    type CoordinateSystemProps = {
-        coordinateSystem?: number;
-        coordinateOrigin?: [number, number];
-        wrapLongitude?: boolean;
-        modelMatrix?: number[];
-    };
-
-    type DataProps = {
-        dataComparator?: any;
-        numInstances?: number;
-        updateTriggers?: any;
-    };
-
-    type RenderProps = {
-        parameters?: any;
-        getPolygonOffset?: (i: { layerIndex: number }) => [number, number];
-        transitions?: any;
-    };
-
-    export type LayerProps<T> = CommonLayerProps<T> &
-        LayerInteractionProps<T> &
-        CoordinateSystemProps &
-        DataProps &
-        RenderProps & {
-            // make it so that passing other props doesn't result in a type error
-            // (at least until each layer gets its own types)
-            [key: string]: any;
-        };
-
-    export class Layer<T = Item> {
-        public static defaultProps: any;
-        public constructor(props: LayerProps<T>);
-        public props: LayerProps<T>;
-        public state: any;
-        public context: any;
-
-        public initializeState(context?: any): void;
-        public shouldUpdateState(params: any): boolean;
-        public setState(state: any): void;
-        public setModuleParameters(parameters: any): void;
-        public updateState(params: any): void;
-        public finalizeState(): void;
-
-        public draw(params: any): void;
-        public getPickingInfo(params: any): any;
-        public getShaders(): any;
-
-        public project(coordinates: number[]): number[];
-        public unproject(pixels: number[]): number[];
-    }
-
-    export class CompositeLayer<T = Item> extends Layer<T> {
-        public getSubLayerProps: (props: object) => object;
-        public static defaultProps: object;
-    }
-
-    // https://github.com/uber/deck.gl/tree/master/docs/layers
-    export class ArcLayer<T = any> extends CompositeLayer<T> { }
-    export class BitmapLayer<T = any> extends CompositeLayer<T> { }
-    export class ContourLayer<T = any> extends CompositeLayer<T> { }
-    export class GeoJsonLayer<T = any> extends CompositeLayer<T> { }
-    export class GpuGridLayer<T = any> extends CompositeLayer<T> { }
-    export class GridCellLayer<T = any> extends CompositeLayer<T> { }
-    export class GridLayer<T = any> extends CompositeLayer<T> { }
-    export class HexagonCellLayer<T = any> extends CompositeLayer<T> { }
-    export class HexagonLayer<T = any> extends CompositeLayer<T> { }
-    export class IconLayer<T = any> extends CompositeLayer<T> { }
-    export class LineLayer<T = any> extends CompositeLayer<T> { }
-    export class MeshLayer<T = any> extends CompositeLayer<T> { }
-    export class PathLayer<T = any> extends CompositeLayer<T> { }
-    export class PointCloudLayer<T = any> extends CompositeLayer<T> { }
-    export class PolygonLayer<T = any> extends CompositeLayer<T> { }
-    export class S2Layer<T = any> extends CompositeLayer<T> { }
-    export class ScatterplotLayer<T = any> extends CompositeLayer<T> { }
-    export class ScreenGridLayer<T = any> extends CompositeLayer<T> { }
-    export class SolidPolygonLayer<T = any> extends CompositeLayer<T> { }
-    export class TextLayer<T = any> extends CompositeLayer<T> { }
-    export class TileLayer<T = any> extends CompositeLayer<T> { }
-    export class TripsLayer<T = any> extends CompositeLayer<T> { }
-
-    export class FlyToInterpolator { }
-    export class LinearInterpolator { }
-
-    export class View { }
-    export class MapView extends View { }
-    export class FirstPersonView extends View { }
-    export class ThirdPersonView extends View { }
-    export class OrbitView extends View { }
-    export class PerspectiveView extends View { }
-    export class OrthographicView extends View { }
-
-    export class Viewport { }
-    export class WebMercatorViewport extends Viewport { }
-
-    export class Controller { }
-    export class MapController extends Controller { }
-
-    export class AttributeManager { }
+	// https://github.com/uber/deck.gl/tree/master/docs/layers
+	export class ArcLayer<T> extends CompositeLayer<T> {}
+	export class BitmapLayer<T> extends CompositeLayer<T> {}
+	export class ContourLayer<T> extends CompositeLayer<T> {}
+	export class GeojsonLayer<T> extends CompositeLayer<T> {}
+	export class GpuGridLayer<T> extends CompositeLayer<T> {}
+	export class GridCellLayer<T> extends CompositeLayer<T> {}
+	export class GridLayer<T> extends CompositeLayer<T> {}
+	export class HexagonCellLayer<T> extends CompositeLayer<T> {}
+	export class HexagonLayer<T> extends CompositeLayer<T> {}
+	export class IconLayer<T> extends CompositeLayer<T> {}
+	export class LineLayer<T> extends CompositeLayer<T> {}
+	export class MeshLayer<T> extends CompositeLayer<T> {}
+	export class PathLayer<T> extends CompositeLayer<T> {}
+	export class PointCloudLayer<T> extends CompositeLayer<T> {}
+	export class PolygonLayer<T> extends CompositeLayer<T> {}
+	export class S2Layer<T> extends CompositeLayer<T> {}
+	export class ScatterplotLayer<T> extends CompositeLayer<T> {}
+	export class ScreenGridLayer<T> extends CompositeLayer<T> {}
+	export class SolidPolygonLayer<T> extends CompositeLayer<T> {}
+	export class TextLayer<T> extends CompositeLayer<T> {}
+	export class TileLayer<T> extends CompositeLayer<T> {}
+	export class TripsLayer<T> extends CompositeLayer<T> {}
 }
